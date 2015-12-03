@@ -17,7 +17,8 @@ try:
 except ImportError:
     import unittest  # noqa
 
-from cassandra.cqlengine import operators, connection
+from cassandra import ConsistencyLevel
+from cassandra.cqlengine import operators
 from cassandra.cqlengine.named import NamedKeyspace
 from cassandra.cqlengine.operators import EqualsOperator, GreaterThanOrEqualOperator
 from cassandra.cqlengine.query import ResultObject
@@ -343,6 +344,7 @@ class TestNamedWithMV(BasicSharedKeyspaceUnitTestCase):
                       ('jbellis', 'Checkers', 2015, 6, 20, 1200),
                       ('jbellis', 'Chess', 2015, 6, 21, 3500),
                       ('pcmanus', 'Chess', 2015, 1, 25, 3200)}
+        prepared_insert.consistency_level = ConsistencyLevel.ALL
         execute_concurrent_with_args(self.session, prepared_insert, parameters)
 
         # Attempt to query the data using Named Table interface
