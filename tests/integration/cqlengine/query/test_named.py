@@ -350,15 +350,11 @@ class TestNamedWithMV(BasicSharedKeyspaceUnitTestCase):
         # Attempt to query the data using Named Table interface
         # Also test filtering on mv's
         key_space = NamedKeyspace(ks)
-        table = key_space.table("scores")
         mv_monthly = key_space.table("monthlyhigh")
-        table_objects = table.objects.all()
-        mv_monthly_objects = mv_monthly.objects.all()
         mv_all_time = key_space.table("alltimehigh")
-        mv_all_objects = mv_all_time.objects.all()
-        self.assertEqual(len(table_objects), len(parameters))
-        self.assertEqual(len(mv_monthly_objects), len(parameters))
-        self.assertEqual(len(mv_all_objects), len(parameters))
+        self.assertTrue(self.check_table_size("scores", key_space, len(parameters)))
+        self.assertTrue(self.check_table_size("monthlyhigh", key_space, len(parameters)))
+        self.assertTrue(self.check_table_size("alltimehigh", key_space, len(parameters)))
 
         filtered_mv_monthly_objects = mv_monthly.objects.filter(game='Chess', year=2015, month=6)
         self.assertEqual(len(filtered_mv_monthly_objects), 1)
@@ -367,3 +363,16 @@ class TestNamedWithMV(BasicSharedKeyspaceUnitTestCase):
         filtered_mv_alltime_objects = mv_all_time.objects.filter(game='Chess')
         self.assertEqual(len(filtered_mv_alltime_objects), 2)
         self.assertEqual(filtered_mv_alltime_objects[0]['score'], 3500)
+
+    def check_table_size(self, table_name, key_space, expected_size):
+        table = key_space.table(table_name)
+        attempts = 0
+        while attempts < 10:
+            attempts += 1
+            table_size = len(table.objects.all())
+            if(table_size is not expected_size):
+                print "Table size was {0} and was expeted to be {1}".format(table_size, expected_size)
+            else:
+                return True
+
+        return False
